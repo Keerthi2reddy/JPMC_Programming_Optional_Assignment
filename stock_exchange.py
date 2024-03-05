@@ -15,7 +15,8 @@
 # v. Any bid or offer outside of the top 5 bids or top 5 offers is cancelled and the trader
 # is notified. Any pending orders at the end of the day are cancelled and the trader
 # is notified.
-import Trader from trader
+from trader import Trader
+
 class StockExchange:
     def __init__(self):
         self.last_traded_price = {}
