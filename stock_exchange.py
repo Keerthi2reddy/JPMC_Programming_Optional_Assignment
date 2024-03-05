@@ -44,7 +44,7 @@ class StockExchange:
     def top_5_bids_and_offers(self, security):
         return self.top_5_bids.get(security, None), self.top_5_offers.get(security, None)
     
-    def accept_order(self, trader_id, security, order_type, price, quantity,current_time):
+    def accept_order(self, trader, security, order_type, price, quantity,current_time):
         if self._is_trading_hour(current_time):
             if order_type == "bid":
                 order_list = self.top_5_bids
@@ -53,14 +53,14 @@ class StockExchange:
                 order_list = self.top_5_offers
                 best_price = lambda x: x[1]  # Sort by price ascending for offers
             else:
-                self.notify(trader_id, "Invalid order type. Please specify 'bid' or 'offer'.")
+                self.notify(trader.name, "Invalid order type. Please specify 'bid' or 'offer'.")
                 return False
 
             if security not in order_list:
-                self.notify(trader_id, f"Your {order_type} is cancelled.")
+                self.notify(trader.name, f"Your {order_type} is cancelled.")
                 return False
 
-            order_list[security].append((trader_id, price, quantity))
+            order_list[security].append((trader, price, quantity))
             order_list[security].sort(key=best_price)  # Sort based on the specified lambda function
 
             if len(order_list[security]) > 5:
@@ -75,7 +75,7 @@ class StockExchange:
 
             return True
         else:
-            self.notify(trader_id, "Your order is cancelled as trading hours are done.")
+            self.notify(trader.name, "Your order is cancelled as trading hours are done.")
             return False
 
         
@@ -85,13 +85,11 @@ class StockExchange:
 
         # Implement order matching algorithm following price-time priority
         # This is a simplified version assuming continuous trading
-        print("Matching orders...")
         for security in self.top_5_bids:
             if security in self.top_5_offers:
                 for bid in self.top_5_bids[security]:
                     for offer in self.top_5_offers[security]:
                         if bid[1] >= offer[1]:  # Check if bid price is greater than or equal to offer price
-                            print(f"Matched bid: {bid} with offer: {offer}")
                             quantity = min(bid[2], offer[2])  # Match minimum of bid and offer quantity
                             # Execute trade
                             self._execute_trade(bid[0], offer[0], security, offer[1], quantity)
@@ -102,6 +100,7 @@ class StockExchange:
                             
                             oindex = self.top_5_offers[security].index(tuple(offer))
                             bindex = self.top_5_bids[security].index(tuple(bid))
+
                             # Modify quantity in the bid and offer lists
                             bid[2] -= quantity
                             offer[2] -= quantity
@@ -115,12 +114,9 @@ class StockExchange:
                             if len(self.top_5_bids[security]) == 0 or len(self.top_5_offers[security]) == 0:
                                 break
 
-    def _execute_trade(self, buyer_id, seller_id, security, price, quantity):
+    def _execute_trade(self, buyer, seller, security, price, quantity):
         # Perform trade execution (update balances, transfer shares, etc.)
-        buyer = Trader(buyer_id)
-        seller = Trader(seller_id)
-
-
+        
         # Calculate the total cost of the shares
         total_cost = price * quantity
 
@@ -135,16 +131,15 @@ class StockExchange:
             # Update seller's portfolio with the trade
             self.update_seller_portfolio(seller, security, price, quantity)
 
-
             # Update last traded price
             self.last_traded_price[security] = price
 
             # Notify traders about the trade
-            self.notify(buyer_id, f"You have bought {quantity} shares of {security} at price {price}.")
-            self.notify(seller_id, f"You have sold {quantity} shares of {security} at price {price}.")
+            self.notify(buyer.name, f"You have bought {quantity} shares of {security} at price {price}.")
+            self.notify(seller.name, f"You have sold {quantity} shares of {security} at price {price}.")
         else:
             # Notify buyer about insufficient funds
-            self.notify(buyer_id, "Insufficient funds to complete the purchase.")
+            self.notify(buyer.name, "Insufficient funds to complete the purchase.")
         
     def update_buyer_portfolio(self, trader, security, price, quantity):
         # Update the trader's portfolio with the bought quantity of the stock
@@ -158,7 +153,6 @@ class StockExchange:
         for holding in trader.portfolio:
             if holding['stock_name'] == security:
                 holding['quantity'] -= quantity
-                print(f"Updated seller portfolio: {trader.portfolio}")
                 return
 
     def end_trading_day(self):
@@ -183,4 +177,3 @@ class StockExchange:
     
     def _is_trading_hour(self, current_time):
       return self.trading_hours[0] <= current_time <= self.trading_hours[1]
-
