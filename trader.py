@@ -31,7 +31,7 @@ class Trader:
         else:
             self.sell_stock(stock_exchange, share)
 
-    def buy_stock(self, stock_exchange, share):
+    def buy_stock(self,stock_exchange, share):
         best_bid, best_offer = stock_exchange.best_bid_and_offer(share.name)
 
         random_option = random.randint(1, 4)
@@ -44,18 +44,8 @@ class Trader:
             price = (best_bid + best_offer) / 2
         else:
             price = share.price * random.uniform(0.95, 1.05)
-        self.oms.buy_stock(share.name, 1000, price)
-        # stock = stock_exchange.get_stock(share)
-        # # randomize the price
-        # if stock['best_bid'] and stock['best_ask']:
-        #     price = (stock['best_bid'] + stock['best_ask']) / 2
-        # elif stock['best_bid']:
-        #     price = stock['best_bid'] * 0.95
-        # elif stock['best_ask']:
-        #     price = stock['best_ask'] * 1.05
-        # else:
-        #     price = stock['previous_close'] * 0.95 if stock['previous_close'] else 100
-        # self.oms.buy_stock(stock['name'], 1000, price)
+
+        self.oms.buy_stock(self,stock_exchange,share.name, 1000, price)
 
     def sell_stock(self, stock_exchange, share):
         best_bid, best_offer = stock_exchange.best_bid_and_offer(share.name)
@@ -70,4 +60,4 @@ class Trader:
             price = (best_bid + best_offer) / 2
         else:
             price = share.price * random.uniform(0.95, 1.05)
-        self.oms.sell_stock(share.name, 1000, price)
+        self.oms.sell_stock(self,stock_exchange,share.name, 1000, price)

@@ -26,35 +26,9 @@ class OrderManagementSystem:
             print(stock)
         return self.portfolio
     
-    def buy_stock(self, stock_name, quantity, buy_price):
-        self.account_balance -= (quantity * buy_price)
-        # append the stock to the portfolio if it stock_name is not already in the portfolio
-        found = 0
-        for stock_dict in self.portfolio:
-            if stock_dict['stock_name'] == stock_name:
-                stock_dict['quantity'] += quantity
-                found = 1
-        if found == 0:
-            self.portfolio.append({'stock_name': stock_name, 'quantity': quantity})
-        else:
-            for stock_dict in self.portfolio:
-                if stock_dict['stock_name'] == stock_name:
-                    stock_dict['quantity'] += quantity
-        # print self.trader_name bought stock stock_name
-        print(f' bought stock {stock_name}')
+    def buy_stock(self,trader,stock_exchange, stock_name, quantity, buy_price):
+        stock_exchange.accept_order(trader, stock_name, 'bid', buy_price, quantity)
 
-    def sell_stock(self, stock_name, quantity, sell_price):
-        found = 0
-        for stock_dict in self.portfolio:
-            if stock_dict['stock_name'] == stock_name:
-                found = 1
-                if stock_dict['quantity'] >= quantity:
-                    stock_dict['quantity'] -= quantity
-                    self.account_balance += (quantity * sell_price)
-                    # print(f'Stock {stock_name} sold by {self.trader_name}')
-                    print(f' sold stock {stock_name}')
-                    if stock_dict['quantity'] == 0:
-                        
-                        self.portfolio.remove(stock_dict)
-        if found == 0:
-            print('Stock not found in portfolio')
+
+    def sell_stock(self,trader,stock_exchange, stock_name, quantity, sell_price):
+        stock_exchange.accept_order(trader, stock_name, 'offer', sell_price, quantity)
